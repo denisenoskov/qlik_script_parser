@@ -15,6 +15,7 @@ along with any possible methods they may possess.
 """
 
 from typing import Union as _Union
+from typing import Tuple as _Tuple
 
 import pregex.core.exceptions as _ex
 import pregex.core.pre as _pre
@@ -66,20 +67,20 @@ class __Lookaround(__Assertion):
 
     :param Pregex | str pres: Two or more Pregex instances, the first of which always \
         represents the `match` pattern, while the rest constitute `assertion` patterns.
-    :param (tuple[Pregex | str] => str) transform: A `transform` function for the provided patterns.
+    :param (_Tuple[Pregex | str] => str) transform: A `transform` function for the provided patterns.
 
     :raises NotEnoughArgumentsException: No assertion patterns were provided.
     :raises EmptyNegativeAssertionException: The empty string is provided \
         as one of the assertion patterns.
     '''
 
-    def __init__(self, pres: tuple[_Union[_pre.Pregex, str]], transform) -> _pre.Pregex:
+    def __init__(self, pres: _Tuple[_Union[_pre.Pregex, str]], transform) -> _pre.Pregex:
         '''
         Constitutes the base class for all "Lookaround" classes.
 
         :param Pregex | str pres: Two or more Pregex instances, the first of which always \
             represents the `match` pattern, while the rest constitute `assertion` patterns.
-        :param (tuple[Pregex | str] => str) transform: A `transform` function for the provided patterns.
+        :param (_Tuple[Pregex | str] => str) transform: A `transform` function for the provided patterns.
 
         :raises NotEnoughArgumentsException: No assertion patterns were provided.
         :raises EmptyNegativeAssertionException: The empty string is provided \

@@ -1,12 +1,5 @@
 __doc__ = """
-This module contains various classes that can be used to match
-all sorts of QLIK script patterns.
-
-Classes & methods
--------------------------------------------
-
-Below are listed all classes within :py:mod:`pregex.meta.qlik_script`
-along with any possible methods they may possess.
+https://help.qlik.com/ru-RU/cloud-services/Subsystems/Hub/Content/Sense_Hub/Scripting/script-statements-keywords.htm
 """
 
 __all__ = ['find_match']
@@ -18,7 +11,11 @@ import pregex.core.classes as _cl
 import pregex.core.groups as _gr
 import pregex.core.operators as _op
 import pregex.core.pre as _pre
-from .types import VarData, VarTypes, Vars
+from .types import VarData, VarTypes, ScriptData
+
+import abc
+
+import logging
 
 
 class _SingletonMeta(type):
@@ -34,7 +31,30 @@ class _SingletonMeta(type):
         return cls._instances[cls]
 
 
-class _VarName(_pre.Pregex, metaclass=_SingletonMeta):
+class _ScriptElement(_pre.Pregex, metaclass=_SingletonMeta):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class RegexTemp(_pre.Pregex, metaclass=_SingletonMeta):
+    """Шаблон для разработки классов регулярных выражений команд скрипта"""
+
+    def __init__(self, *args, **kwargs):
+        super(RegexTemp, self).__init__(*args, **kwargs)
+        pass
+
+    @abc.abstractmethod
+    def proceed(self, line: str, script_data: ScriptData):
+        """Выполнить ценностное действие, перевести указатель на следующую строку скрипта
+        Args:
+            line: текущая строка для обработки
+            script_data: данные интерпретатора в момент выполнения
+        Returns:
+            Флаг того что шаблон подходит и действия выполнены успешно
+            """
+
+
+class _VarName(_ScriptElement):
     """Имя переменной в скрипте"""
 
     def __init__(self):
@@ -43,48 +63,55 @@ class _VarName(_pre.Pregex, metaclass=_SingletonMeta):
         super().__init__(str(pre), escape=False)
 
 
-class _WhitespaceOptional(_pre.Pregex, metaclass=_SingletonMeta):
+class _WhitespaceOptional(_ScriptElement):
+    """Опциональные пробелы"""
     def __init__(self):
         super().__init__(str(_cl.AnyWhitespace().at_least(0)), escape=False)
 
 
-class _Equal(_pre.Pregex, metaclass=_SingletonMeta):
+class _WhitespaceRequired(_ScriptElement):
+    """Обязательные пробелы пробелы"""
+    def __init__(self):
+        super().__init__(str(_cl.AnyWhitespace().at_least(1)), escape=False)
+
+
+class _Equal(_ScriptElement):
+    """Знак равенства"""
     def __init__(self):
         super().__init__('=', escape=False)
 
 
-class _Value(_pre.Pregex, metaclass=_SingletonMeta):
+class _Value(_ScriptElement):
+    """Значение которое присвоится переменной"""
     def __init__(self):
         super().__init__(str(_cl.Any().at_least(0)), escape=False)
 
 
-class SetVar(_pre.Pregex, metaclass=_SingletonMeta):
+class SetVar(RegexTemp):
     """
     Команда SET или LET
     """
-
     def __init__(self):
         command = _op.Either('SET', 'LET')
         var_name = _VarName()
+        whitespace_required = _WhitespaceRequired()
         whitespace_optional = _WhitespaceOptional()
         equal = _Equal()
         value = _Value()
-        pre = whitespace_optional + command + whitespace_optional + _gr.Capture(var_name) + \
-              whitespace_optional + equal + whitespace_optional + _gr.Capture(value)
+        pre = whitespace_optional + command + whitespace_required + _gr.Capture(var_name) + \
+            whitespace_required + equal + whitespace_required + _gr.Capture(value)
 
         super().__init__(str(pre), escape=False)
 
-    def get_data(self, text, vars_: Vars) -> Tuple[Union[str, None], Union[VarData, None]]:
-        """
-
+    def _get_data(self, line) -> Tuple[Union[str, None], Union[VarData, None]]:
+        """Получить значение которое присвоится переменной
         Args:
-            vars_:
-            text:
-
+            line: строка
         Returns:
-
+            Если шаблон не совпал, или совпал несколько раз - возвращает (None, None)
+            Иначе, возвращает имя переменной и ее значение
         """
-        data = re.findall(self.get_pattern(), text)
+        data = re.findall(self.get_pattern(), line, flags=re.I)
         if not data:
             return None, None
         elif len(data) > 1:
@@ -99,21 +126,21 @@ class SetVar(_pre.Pregex, metaclass=_SingletonMeta):
                 value = value[1:-1]
             return data[0][0], VarData(typ=VarTypes.VARIABLE, value=value)
 
-    def proceed(self, text, vars_: Vars, current_line_number: int):
-        """
+    def proceed(self, line, script_data: ScriptData):
+        """Выполнить присвоение переменой значения
 
         Args:
-            current_line_number:
-            text:
-            vars_:
-
+            line: текущая команда
+            script_data: данные интерпретатора в текущий момент
         Returns:
-
+            Флаг того что это команда подошла и присвоение переменой прошло успешно
         """
-        name, data = self.get_data(text, vars_)
+        name, data = self._get_data(line)
+        logging.debug(f'нашли данные - {name, data}')
+
         if name and data['typ']:
-            vars_[name] = data
-            current_line_number += 1
+            script_data.vars[name] = data
+            script_data.current_interpretater_line += 1
             return True
         else:
             return False
@@ -122,30 +149,16 @@ class SetVar(_pre.Pregex, metaclass=_SingletonMeta):
 regex = [SetVar()]
 
 
-def _calc_extension(value, vars_: Vars):
-    for v in vars_:
-        value = value.replace(f'$({v})', vars_[v]['value'])
-    return value
-
-
-def _calc_expression(value, vars_: Vars):
-    """Рассчитывает конкретную строку -
-    подставляет значение переменных, выполняет известные функции
-    В результате выполнения, сохраняет
-    """
-
-    value = _calc_extension(value, vars_)
-
-    return value
-
-
-def find_match(line: str, vars_: Vars, current_line_number: int):
-    """Ищет совпадение среди шаблонов, если находит - производит манипуляции
+def find_match(line: str, script_data: ScriptData):
+    """Ищет совпадение среди шаблонов, если находит - вызывает функцию proceed. Она выполняет заложенное действие.
+    А также, изменение следующей строки
     Returns:
-        True - если нашел, False - если не нашел шаблон
+        Флаг успешности поиска и выполнения команды
     """
-    line = _calc_expression(line, vars_)
     for reg in regex:
-        if reg.proceed(line, vars_, current_line_number):
+        logging.debug(f'ищем строку - {line}')
+        if reg.proceed(line, script_data):
             return True
+    script_data.current_interpretater_line += 1
     return False
+

@@ -11,6 +11,10 @@ along with any possible methods they may possess.
 
 from typing import Optional as _Optional
 from typing import Union as _Union
+from typing import Tuple as _Tuple
+from typing import Set as _Set
+from typing import Dict as _Dict
+from typing import List as _List
 
 import pregex.core.assertions as _asr
 import pregex.core.classes as _cl
@@ -198,7 +202,7 @@ class WordContains(__Word):
     '''
     Matches any word that contains either one of the provided strings.
 
-    :param str | list[str] infix: Either a string or a list of strings at \
+    :param str | _List[str] infix: Either a string or a list of strings at \
         least one of which a word must contain in order to be considered a match.
     :param is_global: Determines whether to include foreign characters. \
         Defaults to ``True``.
@@ -213,12 +217,12 @@ class WordContains(__Word):
     :raises InvalidArgumentTypeException: At least one of the provided infixes is not a string.
     '''
 
-    def __init__(self, infix: _Union[str, list[str]],
+    def __init__(self, infix: _Union[str, _List[str]],
                  is_global: bool = True, is_extensible: bool = False) -> _pre.Pregex:
         '''
         Matches any word that contains either one of the provided strings.
 
-        :param str | list[str] infix: Either a string or a list of strings at \
+        :param str | _List[str] infix: Either a string or a list of strings at \
             least one of which a word must contain in order to be considered a match.
         :param is_global: Determines whether to include foreign characters. \
             Defaults to ``True``.
@@ -249,7 +253,7 @@ class WordStartsWith(__Word):
     '''
     Matches any word that starts with either one of the provided strings.
 
-    :param str | list[str] prefix: Either a string or a list of strings with \
+    :param str | _List[str] prefix: Either a string or a list of strings with \
         any of which a word must start in order to be considered a match.
     :param is_global: Determines whether to include foreign characters. \
         Defaults to ``True``.
@@ -264,12 +268,12 @@ class WordStartsWith(__Word):
     :raises InvalidArgumentTypeException: At least one of the provided prefixes is not a string.
     '''
 
-    def __init__(self, prefix: _Union[str, list[str]],
+    def __init__(self, prefix: _Union[str, _List[str]],
                  is_global: bool = True, is_extensible: bool = False) -> _pre.Pregex:
         '''
         Matches any word that starts with either one of the provided strings.
 
-        :param str | list[str] prefix: Either a string or a list of strings with \
+        :param str | _List[str] prefix: Either a string or a list of strings with \
             any of which a word must start in order to be considered a match.
         :param is_global: Determines whether to include foreign characters. \
             Defaults to ``True``.
@@ -298,7 +302,7 @@ class WordEndsWith(__Word):
     '''
     Matches any word that ends with either one of the provided strings.
 
-    :param str | list[str] suffix: Either a string or a list of strings with \
+    :param str | _List[str] suffix: Either a string or a list of strings with \
         any of which a word must end in order to be considered a match.
     :param is_global: Determines whether to include foreign characters. \
         Defaults to ``True``.
@@ -314,12 +318,12 @@ class WordEndsWith(__Word):
     :raises InvalidArgumentTypeException: At least one of the provided suffixes is not a string.
     '''
 
-    def __init__(self, suffix: _Union[str, list[str]],
+    def __init__(self, suffix: _Union[str, _List[str]],
                  is_global: bool = True, is_extensible: bool = False) -> _pre.Pregex:
         '''
         Matches any word that ends with either one of the provided strings.
 
-        :param str | list[str] suffix: Either a string or a list of strings with \
+        :param str | _List[str] suffix: Either a string or a list of strings with \
             any of which a word must end in order to be considered a match.
         :param is_global: Determines whether to include foreign characters. \
             Defaults to ``True``.
@@ -1275,7 +1279,7 @@ class Date(_pre.Pregex):
     '''
     Matches any date within a range of predefined formats.
 
-    :param str | list[str] formats: Either a string or a list of strings \
+    :param str | _List[str] formats: Either a string or a list of strings \
         through which it is determined what are the exact date formats that \
         are to be considered possible matches. A valid date format can be \
         either one of:
@@ -1317,13 +1321,13 @@ class Date(_pre.Pregex):
         is not a valid date format.
     '''
 
-    __date_separators: tuple[str, str] = ("-", "/")
+    __date_separators: _Tuple[str, str] = ("-", "/")
 
-    def __init__(self, formats: _Optional[_Union[str, list[str]]] = None, is_extensible: bool = False) -> _pre.Pregex:
+    def __init__(self, formats: _Optional[_Union[str, _List[str]]] = None, is_extensible: bool = False) -> _pre.Pregex:
         '''
         Matches any date within a range of predefined formats.
 
-        :param str | list[str] formats: Either a string or a list of strings \
+        :param str | _List[str] formats: Either a string or a list of strings \
             through which it is determined what are the exact date formats that \
             are to be considered possible matches. A valid date format can be \
             either one of:
@@ -1370,7 +1374,7 @@ class Date(_pre.Pregex):
         if isinstance(formats, str):
             formats = [formats]
 
-        dates: list[_pre.Pregex] = []
+        dates: _List[_pre.Pregex] = []
         for format in formats:
             if format not in date_formats:
                 message = f"Provided date format \"{format}\" is not valid."
@@ -1429,7 +1433,7 @@ class Date(_pre.Pregex):
         return pre
 
     @staticmethod
-    def __date_formats() -> list[str]:
+    def __date_formats() -> _List[str]:
         '''
         Returns a list containing all possible date format combinations.
         '''
@@ -1437,7 +1441,7 @@ class Date(_pre.Pregex):
         month = ("mm", "m")
         year = ("yyyy", "yy")
 
-        date_formats: list[tuple[str, str, str]] = []
+        date_formats: _List[_Tuple[str, str, str]] = []
         for d in day:
             for m in month:
                 for y in year:

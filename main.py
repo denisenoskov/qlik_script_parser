@@ -12,5 +12,8 @@ df
 fdf
 */
 Load * FROM connect;
+Set dfdsf = 'dfsdfsdf';
+SET dfdf = $(dfdsf);
 '''
 p = QlikScriptParser(script)
+

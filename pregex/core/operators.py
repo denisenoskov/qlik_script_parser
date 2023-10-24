@@ -10,6 +10,7 @@ along with any possible methods they may possess.
 """
 
 from typing import Union as _Union
+from typing import Tuple as _Tuple
 
 import pregex.core.pre as _pre
 
@@ -18,9 +19,9 @@ class __Operator(_pre.Pregex):
     '''
     Constitutes the base class for all classes that are part of this module.
 
-    :param tuple[Pregex | str] pres: A tuple of strings or Pregex instances representing \
+    :param _Tuple[Pregex | str] pres: A tuple of strings or Pregex instances representing \
         the patterns to which the operator is to be applied.
-    :param (tuple[Pregex | str] => str) transform: A `transform` function for the provided pattern.
+    :param (_Tuple[Pregex | str] => str) transform: A `transform` function for the provided pattern.
 
     :raises InvalidArgumentTypeException: At least one of the provided arguments \
         through ``pres`` is neither a ``Pregex`` instance nor a string.
@@ -30,13 +31,13 @@ class __Operator(_pre.Pregex):
         provided, it is simply returned wrapped within a ``Pregex`` instance.
     '''
 
-    def __init__(self, pres: tuple[_Union[_pre.Pregex, str]], transform) -> _pre.Pregex:
+    def __init__(self, pres: _Tuple[_Union[_pre.Pregex, str]], transform) -> _pre.Pregex:
         '''
         Constitutes the base class for all classes that are part of this module.
 
-        :param tuple[Pregex | str] pres: A tuple of strings or Pregex instances representing \
+        :param _Tuple[Pregex | str] pres: A tuple of strings or Pregex instances representing \
             the patterns to which the operator is to be applied.
-        :param (tuple[Pregex | str] => str) transform: A `transform` function for the provided pattern.
+        :param (_Tuple[Pregex | str] => str) transform: A `transform` function for the provided pattern.
 
         :raises InvalidArgumentTypeException: At least one of the provided arguments \
             through ``pres`` is neither a ``Pregex`` instance nor a string.

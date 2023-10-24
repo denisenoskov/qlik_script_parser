@@ -14,6 +14,9 @@ import re as _re
 from typing import Iterator as _Iterator
 from typing import Optional as _Optional
 from typing import Union as _Union
+from typing import Dict as _Dict
+from typing import Tuple as _Tuple
+from typing import List as _List
 
 import pregex.core.exceptions as _ex
 
@@ -51,7 +54,7 @@ class Pregex():
 
     :schema: __groupping_rules[type] => (on_concat, on_quantify, on_assertion)
     '''
-    __groupping_rules: dict[_Type, str] = {
+    __groupping_rules: _Dict[_Type, str] = {
         _Type.Alternation: (True, True, True),
         _Type.Assertion: (False, True, False),
         _Type.Class: (False, False, False),
@@ -187,7 +190,7 @@ class Pregex():
         for match in self.__iterate_match_objects(source, is_path):
             yield match.group(0)
 
-    def iterate_matches_and_pos(self, source: str, is_path: bool = False) -> _Iterator[tuple[str, int, int]]:
+    def iterate_matches_and_pos(self, source: str, is_path: bool = False) -> _Iterator[_Tuple[str, int, int]]:
         '''
         Generates any possible matches found within the provided text \
         along with their exact position.
@@ -238,7 +241,7 @@ class Pregex():
             yield source[max(start - n_left, 0):min(end + n_right, len(source))]
 
     def iterate_captures(self, source: str, include_empty: bool = True,
-                         is_path: bool = False) -> _Iterator[tuple[str]]:
+                         is_path: bool = False) -> _Iterator[_Tuple[str]]:
         '''
         Generates tuples, one tuple per match, where each tuple contains \
         all of its corresponding match's captured groups.
@@ -260,7 +263,7 @@ class Pregex():
 
     def iterate_captures_and_pos(self, source: str, include_empty: bool = True,
                                  relative_to_match: bool = False, is_path: bool = False) -> _Iterator[
-        list[tuple[str, int, int]]]:
+        _List[_Tuple[str, int, int]]]:
         '''
         Generates lists of tuples, one list per match, where each tuple contains one \
         of its corresponding match's captured groups along with its exact position \
@@ -292,7 +295,7 @@ class Pregex():
             yield groups
 
     def iterate_named_captures(self, source: str, include_empty: bool = True,
-                               is_path: bool = False) -> _Iterator[dict[str, str]]:
+                               is_path: bool = False) -> _Iterator[_Dict[str, str]]:
         '''
         Generates dictionaries, one dictionary per match, where each dictionary \
         contains key-value pairs of any named captured groups that belong to its \
@@ -316,7 +319,7 @@ class Pregex():
 
     def iterate_named_captures_and_pos(self, source: str, include_empty: bool = True,
                                        relative_to_match: bool = False, is_path: bool = False) -> _Iterator[
-        dict[str, tuple[str, int, int]]]:
+        _Dict[str, _Tuple[str, int, int]]]:
         '''
         Generates dictionaries, one dictionary per match, where each dictionary \
         contains key-value pairs of any named captured groups that belong to its\
@@ -349,7 +352,7 @@ class Pregex():
                     groups.update({k: (v, start, end)})
             yield groups
 
-    def get_matches(self, source: str, is_path: bool = False) -> list[str]:
+    def get_matches(self, source: str, is_path: bool = False) -> _List[str]:
         '''
         Returns a list containing any possible matches found within \
         the provided text.
@@ -361,7 +364,7 @@ class Pregex():
         '''
         return list(match for match in self.iterate_matches(source, is_path))
 
-    def get_matches_and_pos(self, source: str, is_path: bool = False) -> list[tuple[str, int, int]]:
+    def get_matches_and_pos(self, source: str, is_path: bool = False) -> _List[_Tuple[str, int, int]]:
         '''
         Returns a list containing any possible matches found within the \
         provided text along with their exact position.
@@ -374,7 +377,7 @@ class Pregex():
         return list(match for match in self.iterate_matches_and_pos(source, is_path))
 
     def get_matches_with_context(self, source: str, n_left: int = 5, n_right: int = 5,
-                                 is_path: bool = False) -> list[str]:
+                                 is_path: bool = False) -> _List[str]:
         '''
         Returns a list containing any possible matches found within the \
         provided text, along with any of its surrounding context, the exact \
@@ -397,7 +400,7 @@ class Pregex():
         return list(match for match in self.iterate_matches_with_context(
             source, n_left, n_right, is_path))
 
-    def get_captures(self, source: str, include_empty: bool = True, is_path: bool = False) -> list[tuple[str]]:
+    def get_captures(self, source: str, include_empty: bool = True, is_path: bool = False) -> _List[_Tuple[str]]:
         '''
         Returns a list of tuples, one tuple per match, where each tuple contains \
         all of its corresponding match's captured groups.
@@ -416,8 +419,8 @@ class Pregex():
         return list(group for group in self.iterate_captures(source, include_empty, is_path))
 
     def get_captures_and_pos(self, source: str, include_empty: bool = True,
-                             relative_to_match: bool = False, is_path: bool = False) -> list[
-        list[tuple[str, int, int]]]:
+                             relative_to_match: bool = False, is_path: bool = False) -> _List[
+        _List[_Tuple[str, int, int]]]:
         '''
         Returns a list containing lists of tuples, one list per match, where each \
         tuple contains one of its corresponding match's captured groups along with \
@@ -441,7 +444,7 @@ class Pregex():
             source, include_empty, relative_to_match, is_path))
 
     def get_named_captures(self, source: str,
-                           include_empty: bool = True, is_path: bool = False) -> list[dict[str, str]]:
+                           include_empty: bool = True, is_path: bool = False) -> _List[_Dict[str, str]]:
         '''
         Returns a dictionary of tuples, one dictionary per match, where each \
         dictionary contains key-value pairs of any named captured groups that \
@@ -463,8 +466,8 @@ class Pregex():
         return list(group for group in self.iterate_named_captures(source, include_empty, is_path))
 
     def get_named_captures_and_pos(self, source: str, include_empty: bool = True,
-                                   relative_to_match: bool = False, is_path: bool = False) -> list[
-        dict[str, tuple[str, int, int]]]:
+                                   relative_to_match: bool = False, is_path: bool = False) -> _List[
+        _Dict[str, _Tuple[str, int, int]]]:
         '''
         Returns a dictionary of tuples, one dictionary per match, where each \
         dictionary contains key-value pairs of any named captured groups that \
@@ -514,7 +517,7 @@ class Pregex():
             source = self.__extract_text(source)
         return _re.sub(str(self), repl, source, count, flags=self.__flags)
 
-    def split_by_match(self, source: str, is_path: bool = False) -> list[str]:
+    def split_by_match(self, source: str, is_path: bool = False) -> _List[str]:
         '''
         Splits the provided text based on any occuring matches and returns \
         the result as a list containing each individual part of the text \
@@ -534,7 +537,7 @@ class Pregex():
         split_list.append(source[index:])
         return split_list
 
-    def split_by_capture(self, source: str, include_empty: bool = True, is_path: bool = False) -> list[str]:
+    def split_by_capture(self, source: str, include_empty: bool = True, is_path: bool = False) -> _List[str]:
         '''
         Splits the provided text based on any occuring captures and returns \
         the result as alist containing each individual part of the text \
@@ -1357,7 +1360,7 @@ class Pregex():
         return pattern
 
     @staticmethod
-    def __infer_type(pattern: str) -> tuple[_Type, bool]:
+    def __infer_type(pattern: str) -> _Tuple[_Type, bool]:
         '''
         Examines the provided RegEx pattern and returns its type, \
         as well as a boolean indicating whether said pattern can be \

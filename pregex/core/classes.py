@@ -172,6 +172,10 @@ from string import whitespace as _whitespace
 import pregex.core.exceptions as _ex
 import pregex.core.pre as _pre
 
+from typing import Tuple as _Tuple
+from typing import Set as _Set
+from typing import List as _List
+
 
 class __Class(_pre.Pregex):
     '''
@@ -234,7 +238,7 @@ class __Class(_pre.Pregex):
         return self.__verbose
 
     @staticmethod
-    def __process(pattern: str, is_negated: bool, simplify_word: bool) -> tuple[str, str]:
+    def __process(pattern: str, is_negated: bool, simplify_word: bool) -> _Tuple[str, str]:
         '''
         Performs some modifications to the provided pattern and returns \
         it in both a verbose and a simplified form.
@@ -264,17 +268,17 @@ class __Class(_pre.Pregex):
         return verbose_pattern, _re.sub(r"\[\^(\\w|\\d|\\s)\]", lambda m: m.group(1).upper(), simplified_pattern)
 
     @staticmethod
-    def __chars_to_ranges(ranges: set[str], chars: set[str]) -> tuple[set[str], set[str]]:
+    def __chars_to_ranges(ranges: _Set[str], chars: _Set[str]) -> _Tuple[_Set[str], _Set[str]]:
         '''
         Checks whether the provided characters can be incorporated within ranges.
         Returns the newly constructed ranges and characters as sets.
 
-        :param set[str] ranges: A set containing all ranges.
-        :param set[str] chars: A set containing all characters.
+        :param _Set[str] ranges: A set containing all ranges.
+        :param _Set[str] chars: A set containing all characters.
         '''
         # 1. Un-escape any escaped characters and convert to list.
-        chars: list[str] = list(__class__.__modify_classes(chars, escape=False))
-        ranges: list[list[str]] = list(__class__.__split_range(rng) for rng in
+        chars: _List[str] = list(__class__.__modify_classes(chars, escape=False))
+        ranges: _List[_List[str]] = list(__class__.__split_range(rng) for rng in
                                        __class__.__modify_classes(ranges, escape=False))
 
         # 2. Check whether ranges can be constructed from chars.
@@ -320,13 +324,13 @@ class __Class(_pre.Pregex):
         return ranges, chars
 
     @staticmethod
-    def __verbose_to_shorthand(classes: set[str], simplify_word: bool) -> set[str]:
+    def __verbose_to_shorthand(classes: _Set[str], simplify_word: bool) -> _Set[str]:
         '''
         This method searches the provided set for subsets of character classes that \
         correspond to a shorthand-notation character class, and if it finds any, it \
         replaces them with said character class, returning the resulting set at the end.
 
-        :param set[str] classes: The set containing the classes as strings.
+        :param _Set[str] classes: The set containing the classes as strings.
         :param bool simplify_word: Indicates whether `[A-Za-z0-9_]` should be simplified \
             to `[\w]` or not.
         '''
@@ -408,12 +412,12 @@ class __Class(_pre.Pregex):
 
         ranges, chars = ranges1.union(ranges2), chars1.union(chars2)
 
-        def reduce_ranges(ranges: list[str]) -> set[str]:
+        def reduce_ranges(ranges: _List[str]) -> _Set[str]:
             '''
             Removes any sub-ranges if they are already included within an other specified range,
             and returns the set of all remaining ranges.
 
-            :param list[str] ranges: A list containing all specified ranges.
+            :param _List[str] ranges: A list containing all specified ranges.
             '''
             if len(ranges) < 2:
                 return set(ranges)
@@ -437,13 +441,13 @@ class __Class(_pre.Pregex):
 
             return set(f"{rng[0]}-{rng[1]}" for rng in ranges)
 
-        def reduce_chars(ranges: list[str], chars: list[str]):
+        def reduce_chars(ranges: _List[str], chars: _List[str]):
             '''
             Removes any characters if those are already included within an other specified range,
             and returns the set of all remaining characters.
 
-            :param list[str] ranges: A list containing all specified ranges.
-            :param list[str] chars: A list containing all specified chars.
+            :param _List[str] ranges: A list containing all specified ranges.
+            :param _List[str] chars: A list containing all specified chars.
             '''
 
             ranges = [__class__.__split_range(rng) for rng in ranges]
@@ -533,7 +537,7 @@ class __Class(_pre.Pregex):
             raise _ex.GlobalWordCharSubtractionException(pre1)
 
         # Subtract any ranges found in both pre2 and pre1 from pre1.
-        def subtract_ranges(ranges1: set[str], ranges2: set[str]) -> tuple[set[str], set[str]]:
+        def subtract_ranges(ranges1: _Set[str], ranges2: _Set[str]) -> _Tuple[_Set[str], _Set[str]]:
             '''
             Subtracts any range found within `ranges2` from `ranges1` and returns \
             the resulting ranges/characters in two seperate sets.
@@ -621,7 +625,7 @@ class __Class(_pre.Pregex):
             pre1.__is_negated)
 
     @staticmethod
-    def __extract_classes(pattern: str, unescape: bool = False) -> tuple[set[str], set[str]]:
+    def __extract_classes(pattern: str, unescape: bool = False) -> _Tuple[_Set[str], _Set[str]]:
         '''
         Extracts all classes from the provided class pattern and returns them \
         separated into two different sets based on whether they constitute a range \
@@ -653,7 +657,7 @@ class __Class(_pre.Pregex):
         return ranges, chars
 
     @staticmethod
-    def __separate_classes(classes: 'str') -> tuple[set[str], set[str]]:
+    def __separate_classes(classes: 'str') -> _Tuple[_Set[str], _Set[str]]:
         '''
         Extracts all classes from the provided character class pattern and \
         returns them separated into ranges and characters.
@@ -668,7 +672,7 @@ class __Class(_pre.Pregex):
         return (ranges, set(_re.findall(r"\\?.", classes, flags=_re.DOTALL)))
 
     @staticmethod
-    def __modify_classes(classes: set[str], escape: bool) -> set[str]:
+    def __modify_classes(classes: _Set[str], escape: bool) -> _Set[str]:
         '''
         Either escapes or unescapes any character within the provided classes that \
         needs to be escaped.
@@ -696,7 +700,7 @@ class __Class(_pre.Pregex):
         return modified_classes
 
     @staticmethod
-    def __split_range(pattern: str) -> list[str]:
+    def __split_range(pattern: str) -> _List[str]:
         '''
         Splits the provided range pattern and returns result as a list \
         of length two where the first element is the range's beginning \
